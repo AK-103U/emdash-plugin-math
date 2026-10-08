@@ -23,7 +23,8 @@
 		"build": "tsdown src/index.ts --format esm --dts --clean",
 		"dev": "tsdown src/index.ts --format esm --dts --watch",
 		"typecheck": "tsc --noEmit",
-		"prepublishOnly": "pnpm typecheck && pnpm build"
+		"check:pack": "node scripts/check-pack.mjs",
+		"prepublishOnly": "pnpm typecheck && pnpm build && pnpm check:pack"
 	},
 	"repository": {
 		"type": "git",

@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the GitHub Release
+  id-token: write # npm trusted publishing (OIDC)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      # No `registry-url`: it writes an `_authToken` line into .npmrc, and npm
+      # then picks token auth over the OIDC exchange and fails with ENEEDAUTH.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Resolve version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      # Runs before the published check, so a tag that disagrees with the
+      # source fails loudly instead of being skipped as "already published".
+      - name: Verify the tag matches the version in source
+        run: |
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$VERSION" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $pkg"
+            exit 1
+          fi
+          count="$(grep -c "version: \"$pkg\"" src/index.ts || true)"
+          if [ "$count" -ne 2 ]; then
+            echo "::error::src/index.ts declares version $pkg $count time(s), expected 2"
+            exit 1
+          fi
+
+      # A re-pushed tag, or the 0.1.0 bootstrap that was published by hand,
+      # must not fail the run.
+      - name: Check whether this version is already on npm
+        id: check
+        run: |
+          if npm view "@ak-103u/emdash-plugin-math@$VERSION" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.check.outputs.published == 'false'
+        run: pnpm check:pack
+
+      # `npm publish` rather than `pnpm publish`: HEAD is detached on a tag,
+      # which pnpm's git checks reject. Visibility comes from publishConfig.
+      - name: Publish to npm
+        if: steps.check.outputs.published == 'false'
+        run: npm publish
+
+      - name: Note the skipped publish
+        if: steps.check.outputs.published == 'true'
+        run: echo "::notice::@ak-103u/emdash-plugin-math@$VERSION is already on npm; publish skipped."
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes

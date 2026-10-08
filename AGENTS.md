@@ -150,6 +150,53 @@ Bump the version in **three** places together: `package.json`,
 `mathPlugin()`, and `createPlugin()`. The version an administrator sees comes
 from `definePlugin()`, not from `package.json`.
 
+## Releasing
+
+The package publishes to `@ak-103u/emdash-plugin-math`. A tag push is the only
+release action:
+
+```bash
+git tag -a v0.1.0 -m "v0.1.0" && git push origin v0.1.0
+```
+
+`.github/workflows/release.yml` then builds, checks, publishes to npm, and
+creates a GitHub Release. The tag must equal the `package.json` version; the
+workflow fails if it does not, and also if `src/index.ts` does not carry that
+version exactly twice.
+
+The workflow skips the publish when the version is already on npm. That covers
+a re-pushed tag and the 0.1.0 bootstrap below.
+
+Run `pnpm check:pack` before a release. It packs the tarball with `npm pack
+--dry-run` and fails when a required path is missing — see
+[Distribution](#distribution) for why `src/astro/` and `src/styles/` matter.
+
+### The 0.1.0 bootstrap
+
+The first version cannot come from CI. `npm trust` requires the package to
+already exist on the registry, so a workflow cannot create it. Publish 0.1.0
+once from a machine with an npm login:
+
+```bash
+npm publish
+```
+
+Then configure trusted publishing, so later releases need no token:
+
+```bash
+npm trust github @ak-103u/emdash-plugin-math --file release.yml \
+  --repo AK-103U/emdash-plugin-math --allow-publish -y
+```
+
+**A trusted publisher expires after 2 days without a successful publish.** Run
+the `npm trust` command only when a CI release follows within that window.
+Otherwise it lapses and must be configured again.
+
+Once the trust relationship holds, do not add an npm token secret to the
+repository. The workflow uses OIDC, and `actions/setup-node` must stay without
+`registry-url` — that input writes an `_authToken` line into `.npmrc`, and npm
+then prefers token auth and fails with `ENEEDAUTH`.
+
 ## The logo
 
 `logo.svg` is the word "KaTeX" set in KaTeX's own `KaTeX_Math-Italic` font.
