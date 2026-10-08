@@ -38,7 +38,7 @@ LaTeX 写错时，插件显示原始源码。插件不留空白，也不显示�
 第 1 步：安装包。
 
 ```bash
-pnpm add emdash-plugin-math
+pnpm add @ak-103u/emdash-plugin-math
 ```
 
 第 2 步：在 `astro.config.mjs` 中注册插件。
@@ -46,7 +46,7 @@ pnpm add emdash-plugin-math
 ```typescript title="astro.config.mjs"
 import { defineConfig } from "astro/config";
 import emdash from "emdash/astro";
-import { mathPlugin } from "emdash-plugin-math";
+import { mathPlugin } from "@ak-103u/emdash-plugin-math";
 
 export default defineConfig({
 	integrations: [

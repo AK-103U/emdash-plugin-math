@@ -38,7 +38,7 @@ An installed dependency does not activate the plugin. You must change the Astro 
 Step 1: Install the package.
 
 ```bash
-pnpm add emdash-plugin-math
+pnpm add @ak-103u/emdash-plugin-math
 ```
 
 Step 2: Register the plugin in `astro.config.mjs`.
@@ -46,7 +46,7 @@ Step 2: Register the plugin in `astro.config.mjs`.
 ```typescript title="astro.config.mjs"
 import { defineConfig } from "astro/config";
 import emdash from "emdash/astro";
-import { mathPlugin } from "emdash-plugin-math";
+import { mathPlugin } from "@ak-103u/emdash-plugin-math";
 
 export default defineConfig({
 	integrations: [

@@ -19,7 +19,7 @@
  * ```typescript
  * import { defineConfig } from "astro/config";
  * import emdash from "emdash/astro";
- * import { mathPlugin } from "emdash-plugin-math";
+ * import { mathPlugin } from "@ak-103u/emdash-plugin-math";
  *
  * export default defineConfig({
  *   integrations: [
@@ -124,8 +124,8 @@ export function mathPlugin(
 		id: "math",
 		version: "0.1.0",
 		format: "native",
-		entrypoint: "emdash-plugin-math",
-		componentsEntry: "emdash-plugin-math/astro",
+		entrypoint: "@ak-103u/emdash-plugin-math",
+		componentsEntry: "@ak-103u/emdash-plugin-math/astro",
 		options,
 	};
 }

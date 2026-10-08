@@ -1,8 +1,9 @@
 {
-	"name": "emdash-plugin-math",
+	"name": "@ak-103u/emdash-plugin-math",
 	"version": "0.1.0",
 	"description": "LaTeX formula rendering for EmDash CMS — server-rendered with KaTeX",
 	"type": "module",
+	"packageManager": "pnpm@12.3.4",
 	"main": "./dist/index.mjs",
 	"exports": {
 		".": {
@@ -23,6 +24,17 @@
 		"dev": "tsdown src/index.ts --format esm --dts --watch",
 		"typecheck": "tsc --noEmit",
 		"prepublishOnly": "pnpm typecheck && pnpm build"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AK-103U/emdash-plugin-math.git"
+	},
+	"bugs": {
+		"url": "https://github.com/AK-103U/emdash-plugin-math/issues"
+	},
+	"homepage": "https://github.com/AK-103U/emdash-plugin-math#readme",
+	"publishConfig": {
+		"access": "public"
 	},
 	"keywords": [
 		"emdash",
