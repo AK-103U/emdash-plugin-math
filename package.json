@@ -1,0 +1,50 @@
+{
+	"name": "emdash-plugin-math",
+	"version": "0.1.0",
+	"description": "LaTeX formula rendering for EmDash CMS — server-rendered with KaTeX",
+	"type": "module",
+	"main": "./dist/index.mjs",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.mts",
+			"import": "./dist/index.mjs"
+		},
+		"./astro": "./src/astro/index.ts"
+	},
+	"files": [
+		"dist",
+		"src/astro",
+		"src/styles",
+		"logo.svg",
+		"README_en.md"
+	],
+	"scripts": {
+		"build": "tsdown src/index.ts --format esm --dts --clean",
+		"dev": "tsdown src/index.ts --format esm --dts --watch",
+		"typecheck": "tsc --noEmit",
+		"prepublishOnly": "pnpm typecheck && pnpm build"
+	},
+	"keywords": [
+		"emdash",
+		"emdash-plugin",
+		"math",
+		"latex",
+		"katex",
+		"formula"
+	],
+	"license": "MIT",
+	"peerDependencies": {
+		"astro": ">=7.3.0",
+		"emdash": ">=1.2.0"
+	},
+	"dependencies": {
+		"katex": "^0.16.11"
+	},
+	"devDependencies": {
+		"@types/katex": "^0.16.7",
+		"astro": "*",
+		"emdash": "*",
+		"tsdown": "^0.20.0",
+		"typescript": "^5.9.0"
+	}
+}

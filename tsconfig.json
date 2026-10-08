@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "preserve",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"esModuleInterop": true,
+		"declaration": true,
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"jsx": "react-jsx",
+		"types": [
+			"astro/client"
+		],
+		"skipLibCheck": true
+	},
+	"include": [
+		"src/**/*",
+		"src/env.d.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	]
+}

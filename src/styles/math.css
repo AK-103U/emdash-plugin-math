@@ -1,0 +1,226 @@
+/*
+ * emdash-plugin-math — formula styles
+ *
+ * Two layers, deliberately:
+ *
+ *   1. `--emdash-math-*` custom properties. These are the theme's API.
+ *      A theme overrides them anywhere in its own CSS to restyle every
+ *      formula on the site. Nothing here uses `!important`, so a theme
+ *      rule of equal specificity always wins.
+ *
+ *   2. `data-tone` variants. These only set the custom properties from
+ *      layer 1, so a theme can override a single tone without losing the
+ *      others.
+ *
+ * Colours fall back to EmDash's own design tokens when the theme defines
+ * them, and to neutral values when it does not. That keeps the plugin
+ * usable in a bare Astro site and consistent inside an EmDash theme.
+ */
+
+/* ------------------------------------------------------------------ *
+ * Layer 1 — theme API
+ * ------------------------------------------------------------------ */
+
+.emdash-math {
+	--emdash-math-bg: transparent;
+	--emdash-math-border: transparent;
+	--emdash-math-color: inherit;
+	--emdash-math-padding: 0;
+	--emdash-math-radius: var(--radius-lg, 12px);
+	--emdash-math-margin: 1.75em;
+	--emdash-math-tag-color: var(--color-muted, #6b6b6b);
+
+	position: relative;
+	margin-block: var(--emdash-math-margin);
+	padding: var(--emdash-math-padding);
+	border-radius: var(--emdash-math-radius);
+	background: var(--emdash-math-bg);
+	box-shadow: inset 0 0 0 1px var(--emdash-math-border);
+	color: var(--emdash-math-color);
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.emdash-math__body {
+	text-align: center;
+}
+
+.emdash-math .katex-display {
+	margin: 0;
+}
+
+/* KaTeX inherits colour, so an inverted tone needs no extra rules. */
+.emdash-math .katex {
+	color: inherit;
+}
+
+/* ------------------------------------------------------------------ *
+ * Formula numbers
+ * ------------------------------------------------------------------ */
+
+.emdash-math--numbered {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 0 1rem;
+}
+
+.emdash-math--numbered .emdash-math__body {
+	grid-column: 1;
+	min-width: 0;
+}
+
+.emdash-math__tag {
+	grid-column: 2;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 0.875rem;
+	color: var(--emdash-math-tag-color);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ *
+ * Failed LaTeX — show the source, not a gap
+ * ------------------------------------------------------------------ */
+
+.emdash-math--error {
+	padding: 0.75rem 1rem;
+	border-radius: var(--radius, 8px);
+	border: 1px dashed color-mix(in srgb, #dc2626 45%, transparent);
+	background: color-mix(in srgb, #dc2626 6%, transparent);
+	text-align: start;
+}
+
+.emdash-math--error pre {
+	margin: 0;
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 0.875rem;
+	line-height: 1.6;
+	color: inherit;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* ------------------------------------------------------------------ *
+ * Layer 2 — tone variants
+ * ------------------------------------------------------------------ */
+
+.emdash-math[data-tone="note"] {
+	--emdash-math-bg: var(--color-fill, #f2f2f2);
+	--emdash-math-border: var(--color-border, #e5e5e5);
+	--emdash-math-padding: 1rem 1.25rem;
+}
+
+.emdash-math[data-tone="accent"] {
+	--emdash-math-bg: #ecfdf5;
+	--emdash-math-border: #a7f3d0;
+	--emdash-math-padding: 1rem 1.25rem;
+}
+
+.emdash-math[data-tone="warn"] {
+	--emdash-math-bg: #fffbeb;
+	--emdash-math-border: #fde68a;
+	--emdash-math-padding: 1rem 1.25rem;
+}
+
+.emdash-math[data-tone="ink"] {
+	--emdash-math-bg: #171717;
+	--emdash-math-border: transparent;
+	--emdash-math-color: #ededed;
+	--emdash-math-padding: 1rem 1.25rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Dark mode
+ *
+ * Written as a media query rather than light-dark() so the plugin works in
+ * themes that set `color-scheme` themselves. Themes that define their own
+ * palette override these along with everything else.
+ * ------------------------------------------------------------------ */
+
+@media (prefers-color-scheme: dark) {
+	.emdash-math[data-tone="note"] {
+		--emdash-math-bg: var(--color-fill, #1f1f1f);
+		--emdash-math-border: var(--color-border, #262626);
+	}
+
+	.emdash-math[data-tone="accent"] {
+		--emdash-math-bg: #052e26;
+		--emdash-math-border: #0f766e;
+	}
+
+	.emdash-math[data-tone="warn"] {
+		--emdash-math-bg: #2e1f05;
+		--emdash-math-border: #a16207;
+	}
+
+	.emdash-math[data-tone="ink"] {
+		--emdash-math-bg: #fafafa;
+		--emdash-math-color: #171717;
+	}
+
+	.emdash-math--error {
+		border-color: color-mix(in srgb, #f87171 45%, transparent);
+		background: color-mix(in srgb, #f87171 8%, transparent);
+	}
+}
+
+/* ------------------------------------------------------------------ *
+ * Copy button
+ *
+ * The button is created at runtime by the injected client script, so it never
+ * carries an Astro scope attribute. This rule must therefore stay unscoped.
+ * ------------------------------------------------------------------ */
+
+.emdash-math__copy {
+	position: absolute;
+	top: 6px;
+	inset-inline-end: 6px;
+	padding: 4px 9px;
+	border-radius: var(--radius-sm, 6px);
+	border: 1px solid var(--color-border, #e5e5e5);
+	background: var(--color-surface, #fff);
+	color: var(--color-text-secondary, #525252);
+	font-family: var(--font-mono, ui-monospace, monospace);
+	font-size: 11px;
+	line-height: 1;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 150ms ease-out;
+}
+
+.emdash-math:hover .emdash-math__copy,
+.emdash-math__copy:focus-visible {
+	opacity: 1;
+}
+
+.emdash-math__copy:hover {
+	color: var(--color-text, #171717);
+	border-color: var(--color-border-strong, #d4d4d4);
+}
+
+.emdash-math__copy[data-done="1"] {
+	opacity: 1;
+	color: #047857;
+	border-color: #a7f3d0;
+}
+
+@media (prefers-color-scheme: dark) {
+	.emdash-math__copy {
+		background: var(--color-surface, #141414);
+		color: var(--color-text-secondary, #a3a3a3);
+		border-color: var(--color-border, #262626);
+	}
+
+	.emdash-math__copy[data-done="1"] {
+		color: #6ee7b7;
+		border-color: #0f766e;
+	}
+}
+
+/* Touch devices have no hover, so keep the button visible. */
+@media (hover: none) {
+	.emdash-math__copy {
+		opacity: 1;
+	}
+}

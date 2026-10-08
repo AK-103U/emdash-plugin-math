@@ -1,0 +1,83 @@
+---
+/**
+ * Renders a `mathBlock` Portable Text node as server-side KaTeX.
+ *
+ * `astro-portabletext` passes custom type components a `node` prop (not `value`).
+ *
+ * KaTeX runs here, at build or request time, so the page ships finished HTML.
+ * Nothing is rendered on the client — the only script is the copy listener
+ * added by `MathScripts.astro`, and it degrades to plain selection without it.
+ *
+ * The `data-latex` attribute carries the source for the copy handler. It is
+ * written with `set:html`-free attribute interpolation, so Astro escapes it.
+ */
+import katex from "katex";
+// Astro bundles CSS imported from a component into the page stylesheet, and
+// dedupes it across pages. Importing here — rather than injecting a CDN link
+// through `page:fragments` — keeps formulas working offline, avoids a runtime
+// third-party request, and needs no CSP exception.
+import "katex/dist/katex.min.css";
+import "../styles/math.css";
+import type { MathBlockNode } from "../types.js";
+
+interface Props {
+	node: MathBlockNode;
+}
+
+const { node } = Astro.props;
+const latex = (node?.latex ?? "").trim();
+const tag = (node?.tag ?? "").trim();
+const tone = node?.tone && node.tone !== "none" ? node.tone : null;
+
+if (!latex) return null;
+
+let html = "";
+let failed = false;
+
+try {
+	html = katex.renderToString(latex, {
+		throwOnError: false,
+		displayMode: true,
+		// Emits MathML alongside the visual HTML so screen readers and text
+		// extractors get a semantic tree instead of styled spans.
+		output: "htmlAndMathml",
+		strict: "ignore",
+		trust: false,
+	});
+} catch {
+	failed = true;
+}
+
+// KaTeX renders its own error marker when throwOnError is false. Treat that as
+// a failure so the component can show the raw source instead of a red glyph.
+if (html.includes("katex-error")) failed = true;
+
+const classes = [
+	"emdash-math",
+	tag ? "emdash-math--numbered" : "",
+	failed ? "emdash-math--error" : "",
+]
+	.filter(Boolean)
+	.join(" ");
+---
+
+{
+	failed ? (
+		// Degrade to the raw source. A blank gap or a mangled glyph tells the
+		// author nothing; their input does.
+		<div class={classes} data-latex={latex} data-math-error="1">
+			<pre>{latex}</pre>
+		</div>
+	) : (
+		<div
+			class={classes}
+			data-latex={latex}
+			data-tone={tone}
+			role="math"
+			aria-label={latex}
+		>
+			{tag && <span class="emdash-math__tag">{tag}</span>}
+			<div class="emdash-math__body" set:html={html} />
+		</div>
+	)
+}
